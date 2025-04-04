@@ -1,6 +1,6 @@
 ﻿name: CI/CD Pipeline for Docker Deployment
 
-# Trigger the workflow when code is pushed to the main branch
+# Trigger the workflow when code is pushed to the master branch
 on:
   push:
     branches:
@@ -35,31 +35,15 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build Docker image
+    - name: Build Docker image with commit tag
       run: |
         docker build -t sandeeppalbrs/myapi:${{ github.sha }} .
 
-    - name: Push Docker image to Docker Hub
+    - name: Tag Docker image with latest
+      run: |
+        docker tag sandeeppalbrs/myapi:${{ github.sha }} sandeeppalbrs/myapi:latest
+
+    - name: Push Docker images to Docker Hub
       run: |
         docker push sandeeppalbrs/myapi:${{ github.sha }}
-
-  # # Deploy the Docker image to a remote server
-  # deploy:
-  #   needs: build
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #   - name: Checkout code
-  #     uses: actions/checkout@v2
-
-  #   - name: SSH to server and deploy
-  #     uses: appleboy/ssh-action@v0.1.1
-  #     with:
-  #       host: ${{ secrets.HOST }}
-  #       username: ${{ secrets.USERNAME }}
-  #       password: ${{ secrets.PASSWORD }}
-  #       script: |
-  #         docker pull yourusername/myapi:${{ github.sha }}
-  #         docker stop myapi-container || true
-  #         docker rm myapi-container || true
-  #         docker run -d -p 80:80 --name myapi-container yourusername/myapi:${{ github.sha }}
+        docker push sandeeppalbrs/myapi:latest
